@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Một bất ngờ nhỏ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap&subset=vietnamese" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;
+    background:radial-gradient(circle at 50% 40%,#2b1b3d,#0d0a1a 70%);
+    font-family:'Playfair Display','Times New Roman',serif;color:#fff;-webkit-tap-highlight-color:transparent}
+  .top{position:absolute;bottom:0;left:0;right:0;height:20vh;z-index:5;pointer-events:none;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:0 24px;box-sizing:border-box;text-align:center;text-shadow:0 2px 12px rgba(0,0,0,.8)}
+  .hint{position:absolute;font-size:1.15rem;opacity:.85;animation:blink 1.8s ease-in-out infinite;transition:opacity .6s}
+  @keyframes blink{50%{opacity:.35}}
+  .line{font-size:1.35rem;line-height:1.7;opacity:0;transition:opacity 2s ease}
+  body.opened .hint{opacity:0;animation:none}
+  body.opened #line1{opacity:1;transition-delay:2.6s}
+  body.opened #line2{opacity:1;transition-delay:15s}
+
+  svg{position:absolute;left:0;right:0;top:0;margin:0 auto;
+    width:min(92vw,520px);height:80vh;cursor:pointer}
+  .petal{transform-origin:200px 200px;
+    transform:rotate(var(--r0)) scale(.32,.55);
+    transition:transform 2.2s cubic-bezier(.2,.8,.2,1) var(--d)}
+  .open .petal{transform:rotate(var(--r)) scale(1)}
+  .stamen{transform-origin:200px 200px;transform:rotate(var(--r)) scaleY(0);
+    transition:transform 1.4s ease-out 1.8s}
+  .open .stamen{transform:rotate(var(--r)) scaleY(1)}
+  .bud{animation:pulse 2.4s ease-in-out infinite;transform-origin:200px 200px}
+  .open .bud{animation:none}
+  @keyframes pulse{50%{transform:scale(1.04)}}
+  .sway{transform-origin:200px 560px;animation:sway 6s ease-in-out infinite}
+  @keyframes sway{50%{transform:rotate(2deg)}}
+  .fall{position:absolute;top:-30px;width:12px;height:18px;background:#fff;opacity:.7;z-index:4;
+    border-radius:80% 0 80% 0;animation:fall linear infinite;pointer-events:none}
+  @keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+</style>
+</head>
+<body>
+<audio id="bgm" src="thanh_xuan.mp3" loop preload="auto"></audio>
+
+<div class="top">
+  <div class="hint">Chạm (click) vào em nhé 🌱</div>
+  <div class="line" id="line1"></div>
+  <div class="line" id="line2"></div>
+</div>
+
+<svg id="flower" viewBox="0 0 400 640">
+  <defs>
+    <linearGradient id="p" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#d9f2c0"/>
+      <stop offset=".25" stop-color="#fff"/>
+      <stop offset="1" stop-color="#ffd1e3"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g class="sway">
+    <path d="M200 215 C196 350 204 460 200 620" stroke="#4f9a4a" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M200 520 C130 490 90 430 70 400 C130 410 180 450 200 500Z" fill="#3f8a3f"/>
+    <path d="M200 460 C270 440 310 390 330 360 C270 370 220 410 200 440Z" fill="#4f9a4a"/>
+    <g class="bud"><g filter="url(#glow)" id="petals"></g></g>
+    <g id="stamens"></g>
+  </g>
+</svg>
+
+<script>
+// ====== SỬA Ở ĐÂY ======
+const DONG_1 = "Have a good dayyyy, em nhaaaa!!!! ";
+const DONG_2 = "Hình như em cười rồi :)))";
+const NHAC_BAT_DAU = 0;     // giây bắt đầu trong bài
+const NHAC_AM_LUONG = 0.7;  // từ 0 đến 1
+// =======================
+
+const NS="http://www.w3.org/2000/svg";
+document.getElementById("line1").innerHTML=DONG_1;
+document.getElementById("line2").innerHTML=DONG_2;
+
+const petals=document.getElementById("petals");
+[0,60,120,180,240,300].forEach((a,i)=>{
+  const g=document.createElementNS(NS,"g");
+  g.setAttribute("class","petal");
+  g.style.setProperty("--r",a+"deg");
+  g.style.setProperty("--r0",(a*0.12)+"deg");
+  g.style.setProperty("--d",(i%2?0.3:0)+(i*0.12)+"s");
+  g.innerHTML=`
+    <path d="M200 200 C150 150 150 70 200 20 C250 70 250 150 200 200Z"
+          fill="url(#p)" stroke="#f3b6cf" stroke-width="1.2"/>
+    <path d="M200 195 C200 140 200 80 200 40" stroke="#c9e6b0" stroke-width="1.5" fill="none" opacity=".8"/>
+    ${[...Array(7)].map(()=>{
+      const x=185+Math.random()*30,y=70+Math.random()*100;
+      return `<circle cx="${x}" cy="${y}" r="${1+Math.random()*1.6}" fill="#d9487f" opacity=".7"/>`;
+    }).join("")}`;
+  petals.appendChild(g);
+});
+
+const st=document.getElementById("stamens");
+[-35,-18,0,18,35,50].forEach(a=>{
+  const g=document.createElementNS(NS,"g");
+  g.setAttribute("class","stamen");
+  g.style.setProperty("--r",a+"deg");
+  g.innerHTML=`<line x1="200" y1="200" x2="200" y2="95" stroke="#f6e7a1" stroke-width="2"/>
+               <ellipse cx="200" cy="92" rx="4" ry="9" fill="#e67e22"/>`;
+  st.appendChild(g);
+});
+
+function playMusic(){
+  const bgm=document.getElementById("bgm");
+  bgm.currentTime=NHAC_BAT_DAU;
+  bgm.volume=0;
+  bgm.play().then(()=>{
+    let v=0;
+    const fade=setInterval(()=>{
+      v=Math.min(v+0.02,NHAC_AM_LUONG);
+      bgm.volume=v;
+      if(v>=NHAC_AM_LUONG)clearInterval(fade);
+    },120);
+  }).catch(()=>{});
+}
+
+function bloom(){
+  const svg=document.getElementById("flower");
+  if(svg.classList.contains("open"))return;
+  svg.classList.add("open");
+  document.body.classList.add("opened");
+  playMusic();
+  if(navigator.vibrate)navigator.vibrate(80);
+  for(let i=0;i<18;i++){
+    const d=document.createElement("div");
+    d.className="fall";
+    d.style.left=Math.random()*100+"vw";
+    d.style.animationDuration=(7+Math.random()*8)+"s";
+    d.style.animationDelay=(Math.random()*5)+"s";
+    document.body.appendChild(d);
+  }
+}
+document.body.addEventListener("click",bloom);
+</script>
+</body>
+</html>
